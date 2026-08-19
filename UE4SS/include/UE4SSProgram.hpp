@@ -234,7 +234,7 @@ namespace RC
         auto queue_reinstall_mod_by_name(std::string_view mod_name) -> void;
         auto queue_uninstall_mod_by_name(const std::string& mod_name) -> void;
         auto queue_uninstall_mod_by_name(std::string_view mod_name) -> void;
-        auto queue_start_lua_mod_by_path(const std::filesystem::path& mod_path) -> void;
+        RC_UE4SS_API auto queue_start_lua_mod_by_path(const std::filesystem::path& mod_path) -> void;
         auto get_object_dumper_output_directory() -> const File::StringType;
         RC_UE4SS_API auto get_module_directory() -> File::StringType;
         RC_UE4SS_API auto get_game_executable_directory() -> File::StringType;
