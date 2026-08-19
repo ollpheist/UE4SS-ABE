@@ -421,7 +421,7 @@ namespace RC::GUI::Dumpers
         }
         else
         {
-            Output::send<LogLevel::Error>(STR("Error creating JSON: {}\n"), ensure_str(written.error().includer_error));
+            Output::send<LogLevel::Error>(STR("Error creating JSON: {}\n"), ensure_str(written.error().custom_error_message));
             return {};
         }
     }
