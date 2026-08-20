@@ -1295,6 +1295,12 @@ namespace RC
                     set_error("is_directory ran into error %d", ec.value());
                 }
 
+                // mods which use mods.toml are managed by abioticschema
+                if (std::filesystem::exists(sub_directory.path() / "mods.toml"))
+                {
+                    continue;
+                }
+
                 StringType directory_lowercase = ensure_str(sub_directory.path().stem());
                 std::transform(directory_lowercase.begin(), directory_lowercase.end(), directory_lowercase.begin(), std::towlower);
 
@@ -1623,6 +1629,15 @@ namespace RC
     auto UE4SSProgram::start_cpp_mods(IsInitialStartup is_initial_startup) -> void
     {
         ProfilerScope();
+
+        // always start abioticschema
+        if (auto* abiotic_schema = find_mod_by_name<CppMod>(STR("AbioticSchema"), IsInstalled::Yes);
+        abiotic_schema && !abiotic_schema->is_started())
+        {
+            Output::send(STR("Force-starting AbioticSchema\n"));
+            abiotic_schema->start_mod();
+        }
+
         auto error_message = start_mods<CppMod>();
         if (!error_message.empty())
         {
