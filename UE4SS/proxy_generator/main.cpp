@@ -193,7 +193,7 @@ int _tmain(int argc, TCHAR* argv[])
     for (const auto [e, index] : exports | views::enumerate)
     {
         asm_file << std::format("f{} proc", index) << endl;
-        asm_file << std::format("  jmp mProcs[8*{}]", index) << endl;
+        asm_file << std::format("  jmp qword ptr [mProcs+{}]", 8 * index) << endl;
         asm_file << std::format("f{} endp", index) << endl;
     }
 
