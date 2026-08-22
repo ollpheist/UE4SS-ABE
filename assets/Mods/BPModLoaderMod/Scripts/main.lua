@@ -10,7 +10,7 @@ end
 package.path = '.\\Mods\\ModLoaderMod\\?.lua;' .. package.path
 package.path = '.\\Mods\\ModLoaderMod\\BPMods\\?.lua;' .. package.path
 
-Mods = {}
+local Mods = {}
 local OrderedMods = {}
 
 -- Contains mod names from Mods/BPModLoaderMod/load_order.txt and is used to determine the load order of BP mods.
@@ -167,17 +167,6 @@ local function LoadModConfigs()
     SetupModOrder()
 end
 
-LoadModConfigs()
-
-for _, v in ipairs(OrderedMods) do
-    Log(string.format("%s == %s\n", v.Name, v))
-    if type(v) == "table" then
-        for k2, v2 in pairs(v) do
-            Log(string.format("    %s == %s\n", k2, v2))
-        end
-    end
-end
-
 local AssetRegistryHelpers = nil
 local AssetRegistry = nil
 
@@ -266,36 +255,49 @@ local function LoadMods(World)
     end
 end
 
-RegisterKeyBind(Key.INS, function()
-    ExecuteInGameThread(function()
-        LoadMods(UEHelpers.GetWorld())
-    end)
-end)
-
-RegisterBeginPlayPostHook(function(ContextParam)
-    local Context = ContextParam:get()
-    for _, ModConfig in ipairs(OrderedMods) do
-        if Context:GetClass():GetFName() ~= ModConfig.AssetNameAsFName then return end
-        local AssetPathWithClassPrefix = string.format("BlueprintGeneratedClass %s.%s", ModConfig.AssetPath, ModConfig.AssetName)
-        if AssetPathWithClassPrefix == Context:GetClass():GetFullName() then
-            local PostBeginPlay = Context.PostBeginPlay
-            if PostBeginPlay:IsValid() then
-                Log(string.format("Executing 'PostBeginPlay' for mod '%s'\n", Context:GetFullName()))
-                PostBeginPlay()
-            else
-                Log(string.format("PostBeginPlay not valid for mod %s\n", Context:GetFullName()), true)
+ExecuteWithDelay(5000, function()
+    LoadModConfigs()
+    
+    for _, v in ipairs(OrderedMods) do
+        Log(string.format("%s == %s\n", v.Name, v))
+        if type(v) == "table" then
+            for k2, v2 in pairs(v) do
+                Log(string.format("    %s == %s\n", k2, v2))
             end
         end
     end
-end)
 
-RegisterLoadMapPostHook(function(Engine, World)
-    LoadMods(World:get())
-end)
+    RegisterKeyBind(Key.INS, function()
+        ExecuteInGameThread(function()
+            LoadMods(UEHelpers.GetWorld())
+        end)
+    end)
 
-ExecuteInGameThread(function()
-    local ExistingActor = FindFirstOf("Actor")
-    if ExistingActor:IsValid() then
-        LoadMods(ExistingActor:GetWorld())
-    end
+    RegisterBeginPlayPostHook(function(ContextParam)
+        local Context = ContextParam:get()
+        for _, ModConfig in ipairs(OrderedMods) do
+            if Context:GetClass():GetFName() ~= ModConfig.AssetNameAsFName then return end
+            local AssetPathWithClassPrefix = string.format("BlueprintGeneratedClass %s.%s", ModConfig.AssetPath, ModConfig.AssetName)
+            if AssetPathWithClassPrefix == Context:GetClass():GetFullName() then
+                local PostBeginPlay = Context.PostBeginPlay
+                if PostBeginPlay:IsValid() then
+                    Log(string.format("Executing 'PostBeginPlay' for mod '%s'\n", Context:GetFullName()))
+                    PostBeginPlay()
+                else
+                    Log(string.format("PostBeginPlay not valid for mod %s\n", Context:GetFullName()), true)
+                end
+            end
+        end
+    end)
+
+    RegisterLoadMapPostHook(function(Engine, World)
+        LoadMods(World:get())
+    end)
+
+    ExecuteInGameThread(function()
+        local ExistingActor = FindFirstOf("Actor")
+        if ExistingActor:IsValid() then
+            LoadMods(ExistingActor:GetWorld())
+        end
+    end)
 end)
